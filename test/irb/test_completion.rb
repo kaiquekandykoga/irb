@@ -21,6 +21,31 @@ module TestIRB
       end
     end
 
+    def test_parenthesis
+      candidates = IRB::InputCompletor.retrieve_completion_data(").", bind: binding)
+      %w[).rationalize].each do |word|
+        assert_include candidates, word
+      end
+
+      candidates = IRB::InputCompletor.retrieve_completion_data("0).", bind: binding)
+      %w[0).next 0).upto].each do |word|
+        assert_include candidates, word
+      end
+
+      candidates = IRB::InputCompletor.retrieve_completion_data("0.0).", bind: binding)
+      %w[0.0).nan? 0.0).next_float].each do |word|
+        assert_include candidates, word
+      end
+
+      candidates = IRB::InputCompletor.retrieve_completion_data("[]).", bind: binding)
+      %w[[]).to_h []).include?].each do |word|
+        assert_include candidates, word
+      end
+
+      # invalid syntax
+      assert_empty(IRB::InputCompletor.retrieve_completion_data("0--).", bind: binding))
+    end
+
     def test_complete_numeric
       assert_include(IRB::InputCompletor.retrieve_completion_data("1r.positi", bind: binding), "1r.positive?")
       assert_empty(IRB::InputCompletor.retrieve_completion_data("1i.positi", bind: binding))

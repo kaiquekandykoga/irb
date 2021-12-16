@@ -161,6 +161,29 @@ module IRB
           select_message(receiver, message, candidates)
         end
 
+      when /^([^\)]*\))\.([^.]*)$/
+        # Parenthesis
+        receiver = $1
+        message = $2
+
+        inside_parenthesis = input.split(')')[0]
+        inside_class = begin
+                          Kernel.eval(inside_parenthesis).class
+                        rescue SyntaxError
+                          nil
+                        end
+
+        if inside_class
+          candidates = inside_class.instance_methods.collect{|m| m.to_s}
+          if doc_namespace
+            "#{instance.class.name}.#{message}"
+          else
+            select_message(receiver, message, candidates)
+          end
+        else
+          []
+        end
+
       when /^([^\]]*\])\.([^.]*)$/
         # Array
         receiver = $1
